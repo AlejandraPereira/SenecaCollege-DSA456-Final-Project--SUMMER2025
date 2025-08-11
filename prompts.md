@@ -29,23 +29,18 @@ This file logs the tool/prompts you used and the results.  A small note on wheth
 |chatgpt|How can I handle February 29 birthdays properly when calculating age?| A practical and efficient way is to try replacing the birth year with the event year directly; if it raises a ValueError (non-leap year), catch it with try-except and adjust the day to February 28 to calculate age correctly.| Used try-except to handle Feb 29 birthdays in non-leap years, adjusting day to Feb 28 when needed.|
 
 
-## Team-Member2-Name
+## Team-Member3-Manpreet Singh
 
 
 |AI tool name|prompt | result | alterations |
 |---|---|---|---|
-|   |   |   |   |
-
-## Team-Member3-Name
-
-
-|AI tool name|prompt | result | alterations |
-|---|---|---|---|
-|   |   |   |   |
-
-## Team-Member4-Name
-
-
-|AI tool name|prompt | result | alterations |
-|---|---|---|---|
-|   |   |   |   |
+| ChatGPT | How can I safely merge new medal tally data into existing without duplicates? | Checking for existing IDs before appending new rows, using sets for quick lookup. | Implemented a merge function that appends only new entries based on unique 'id' fields to avoid duplication. |
+| ChatGPT | What is a Pythonic way to write `col_index()` that handles missing columns gracefully? | Recommended try-except around `header.index(col_name)` returning -1 if not found. | Added logging for missing columns in prototype. |
+| copilot | How to improve `is_duplicate_athlete()` for partial matches? | Possible fuzzy matching on names or approximate date checks using string similarity or date tolerances. | |
+| ChatGPT | How to reliably get max numeric ID from CSV data when some IDs might be missing? | Try-except during int conversion, skipping invalid entries, returning max found or zero default. |  |
+| ChatGPT | How to efficiently update medal counts by country when adding new results? | By using a dictionary keyed by country codes (NOCs) to accumulate medal counts, updating counts as new data streams in. | Implemented a dictionary-based accumulator for medal tallies to allow quick incremental updates without reprocessing entire datasets. |
+| chatGPT | How to get the index of a column name in a CSV header row in Python? | Used header.index(column_name) to return the position of a given column. |	Added a try-except block to catch ValueError if the column is missing. |
+| chatGPT | How to reliably get max numeric ID from CSV data when some IDs might be missing? | Loop through ID column, use int() with try-except, track max. | Filtered out non-digit IDs and handled empty files by returning 0. |
+| Copilot | How to check if a dictionary representing a row already exists in a list based on specific fields? | Compared field values (like name, dob, noc) to detect duplicates. | Customized to check only name, dob, and noc fields for is_duplicate_athlete. |
+| Copilot | How to merge two CSV datasets but avoid duplicates based on certain fields? | Iterate through both lists, check for duplicates before appending new data. | Integrated logic to compare key athlete fields before appending Paris data. |
+| chatGPT | How to calculate the next edition ID for the Olympics dataset? | Sort existing edition_ids and return max + 1. | Ensured only numeric IDs are considered, added default if none found. |
