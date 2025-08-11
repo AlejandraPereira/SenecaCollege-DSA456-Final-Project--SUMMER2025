@@ -242,3 +242,274 @@ T(p, a) = O(p × a) (since p × a dominates for large p and a)
 Worst-case time complexity: O(p × a)
 
 ---
+
+## Function-6 create_teams_dict
+
+```
+def create_teams_dict(teams):
+    teams_dict = {}
+    for row in teams[1:]:
+        event_id = row[9]
+        athletes_codes = row[12]
+        teams_dict[event_id] = {
+            "isTeamSport": "True",
+            "team": row[2],
+            "athletes_codes": athletes_codes
+        }
+    return teams_dict
+```
+
+**Step 1 — Variables & Functions**
+- n = number of rows in teams (including header)
+
+**Step 2 — Count operations**
+- Loop through (n - 1) rows → O(n)
+- Each iteration → O(1) to extract and assign to dict
+
+**Step 3 — Expression**
+- T(n) = (n - 1) * O(1)
+
+**Step 4 — Simplify**
+- T(n) = O(n)
+
+**Step 5 — Final Result**
+
+- Time Complexity: O(n)**
+
+---
+
+## Function-7 clean_pos 
+
+```
+def clean_pos(pos_value):
+    if pos_value.isdigit() or pos_value in ("DNF", "DNS"):
+        return pos_value
+    else:
+        return ""
+```
+
+** Step 1 — Variables & Functions**
+- Input: `pos_value` (string)
+- Uses `.isdigit()` and membership check
+
+**Step 2 — Count operations**
+- Constant-time logic → O(1)
+
+**Step 3 — Expression**
+- T(n) = O(1)
+
+**Step 4 — Simplify**
+- T(n) = O(1)
+
+**Step 5 — Final Result**
+- Time Complexity: O(1)
+
+---
+
+## Function-8 clean_all_positions
+
+```
+def clean_all_positions(athlete_event_file):
+    pos_idx = athlete_event_file[0].index("pos")
+    for row in athlete_event_file[1:]:
+        row[pos_idx] = clean_pos(row[pos_idx])
+```
+
+**Step 1 — Variables & Functions**
+- n = number of rows in athlete_event_file
+- Calls clean_pos() on each row
+
+**Step 2 — Count operations**
+- Index lookup: O(m)
+- Loop through n-1 rows → Each call to clean_pos = O(1)
+
+**Step 3 — Expression**
+- T(n) = O(n)
+
+**Step 4 — Simplify**
+- T(n) = O(n)
+
+**Step 5 — Final Result**
+- Time Complexity: O(n)
+
+---
+
+## Function-9 mergeGamesData
+
+```
+def mergeGamesData(games_file, paris_data):
+    existing_ids = set()
+    edition_id_idx = col_index(games_file[0], "edition_id")
+
+    for row in games_file[1:]:
+        existing_ids.add(row[edition_id_idx])
+
+    merged_games = games_file[:]
+    for row in paris_data[1:]:
+        if row[edition_id_idx] not in existing_ids:
+            merged_games.append(row)
+        existing_ids.add(row[edition_id_idx])
+
+    return merged_games
+```
+
+**Step 1 — Variables & Functions**
+- m = rows in games_file
+- n = rows in paris_data
+
+**Step 2 — Count operations**
+- Set lookup + copy → O(m + n)
+
+**Step 3 — Expression**
+- T(m, n) = O(m + n)
+
+**Step 4 — Simplify**
+- T(m, n) = O(m + n)
+
+**Step 5 — Final Result**
+- Time Complexity: O(m + n)
+
+---
+
+## Function-10 integrate_paris_countries
+```
+def integrate_paris_countries(original_countries, paris_nocs):
+    existing_nocs = set()
+    noc_idx = col_index(original_countries[0], "noc")
+    updated_countries = original_countries[:]
+
+    for row in original_countries[1:]:
+        existing_nocs.add(row[noc_idx])
+
+    for row in paris_nocs[1:]:
+        if row[0] not in existing_nocs:
+            updated_countries.append([row[0], row[1]])
+            existing_nocs.add(row[0])
+
+    header = updated_countries[0]
+    data_rows = sorted(updated_countries[1:], key=lambda x: x[1])
+    return [header] + data_rows
+```
+
+**Step 1 — Variables & Functions**
+- m = rows in original_countries
+- n = rows in paris_nocs
+
+**Step 2 — Count operations**
+- Set creation → O(m)
+- Insert + sort → O((m + n) log(m + n))
+
+**Step 3 — Expression**
+- T(m, n) = O((m + n) log(m + n))
+
+**Step 4 — Simplify**
+- T(m, n) = O((m + n) log(m + n))
+
+**Step 5 — Final Result**
+- Time Complexity: O((m + n) log(m + n))
+
+---
+
+## Function-11 process_medals_and_update_file
+```
+def process_medals_and_update_file(athlete_event_file, paris_medallists, teams_dict, next_edition_id, athlete_birth_dict, games_start_dates_dict):
+    if '63' not in games_start_dates_dict or None in games_start_dates_dict['63']:
+        games_start_dates_dict['63'] = (
+            datetime.strptime('26-Jul-2024', '%d-%b-%Y'),
+            datetime.strptime('11-Aug-2024', '%d-%b-%Y')
+        )
+
+    if "age" not in athlete_event_file[0]:
+        athlete_event_file[0].append("age")
+        for row in athlete_event_file[1:]:
+            row.append("")
+
+    edition_id_idx = athlete_event_file[0].index("edition_id")
+    athlete_id_idx = athlete_event_file[0].index("athlete_id")
+    age_idx = athlete_event_file[0].index("age")
+
+    for row in athlete_event_file[1:]:
+        edition_id = row[edition_id_idx]
+        athlete_id = row[athlete_id_idx]
+        birth_date = athlete_birth_dict.get(athlete_id)
+        start_date, end_date = games_start_dates_dict.get(edition_id, (None, None))
+        row[age_idx] = calculate_age(birth_date, start_date, end_date) if birth_date and start_date else ""
+
+    if not paris_medallists or not next_edition_id:
+        return
+
+    unique_entries = set(
+        (row[athlete_id_idx], row[athlete_event_file[0].index("event")] if "event" in athlete_event_file[0] else "")
+        for row in athlete_event_file[1:]
+    )
+
+    medallist_header = paris_medallists[0]
+    idx_country_noc = col_index(medallist_header, "country_code")
+    idx_sport = col_index(medallist_header, "discipline")
+    idx_event = col_index(medallist_header, "event")
+    idx_athlete_name = col_index(medallist_header, "name")
+    idx_athlete_id = col_index(medallist_header, "code_athlete")
+    idx_medal = col_index(medallist_header, "medal_type")
+
+    for medallist in paris_medallists[1:]:
+        edition = "2024 Summer Olympics"
+        edition_id = str(next_edition_id).strip()
+
+        country_noc = medallist[idx_country_noc]
+        sport = medallist[idx_sport]
+        event = medallist[idx_event]
+        athlete_id = medallist[idx_athlete_id]
+        medal = medallist[idx_medal]
+        athlete_name = medallist[idx_athlete_name].title()
+
+        is_team_sport = "False"
+        if event in teams_dict:
+            is_team_sport = "True"
+            if athlete_id not in teams_dict[event]["athletes_codes"]:
+                continue
+
+        unique_key = (athlete_id, event)
+        if unique_key in unique_entries:
+            continue
+        unique_entries.add(unique_key)
+
+        if medal in ["Gold Medal", "Gold"]:
+            medal = "Gold"
+            pos = "1"
+        elif medal in ["Silver Medal", "Silver"]:
+            medal = "Silver"
+            pos = "2"
+        elif medal in ["Bronze Medal", "Bronze"]:
+            medal = "Bronze"
+            pos = "3"
+        else:
+            pos = ""
+
+        result_id = ""
+        birth_date = athlete_birth_dict.get(athlete_id)
+        start_date, end_date = games_start_dates_dict.get(edition_id, (None, None))
+        age = calculate_age(birth_date, start_date, end_date) if birth_date and start_date else ""
+
+        new_result = [
+            edition, edition_id, country_noc, sport, event, result_id,
+            athlete_name, athlete_id, pos, medal, is_team_sport, age
+        ]
+        athlete_event_file.append(new_result)
+```
+**Step 1 — Variables & Functions**
+- m = rows in athlete_event_file
+- p = rows in paris_medallists
+
+**Step 2 — Count operations**
+- Add column + age calc = O(m)
+- Unique set creation = O(m)
+- Loop & append Paris data = O(p)
+
+**Step 3 — Expression**
+- T(m, p) = O(m) + O(p)
+
+**Step 4 — Simplify**
+- T(m, p) = O(m + p)
+
+**Step 5 — Final Result**
+- Time Complexity: O(m + p)
