@@ -119,8 +119,8 @@ In the create_athlete_birth_dict function, a dictionary is created where the key
 - Runtime: O(a) worst-case (searching column name), O(1) best-case
 
 **Function is_duplicate_athlete**  
-- Input size: *a* = number of rows in existing_data (olympic_athlete_bio), *p* = number of columns  
-- Runtime: O(a + p) (searching header columns + linear scan for duplicates)
+- Input size:  1 (a single athlete row)
+- Runtime: Worst-case complexity: O(1)
 
 **Function get_max_id**  
 - Input size: *a* = number of rows in data (olympic_athlete_bio)  
@@ -180,62 +180,50 @@ def col_index(header, col_name):
         return -1                       # 1
 ```       
 **Step 1 — Variables & functions:**
-
-a = number of columns in 'header' (list length).
-col_index() → returns position of 'col_name' or -1 if not found.
-T(a) = total operations to find column index.
+- a = number of columns in 'header' (list length).
+- col_index() → returns position of 'col_name' or -1 if not found.
+- T(a) = total operations to find column index.
 
 **Step 2 — Count operations:**
-
 **header.index(col_name) worst case:**
-O(a) comparisons.
-Best case: O(1).
+- O(a) comparisons.
+- Best case: O(1).
 
 **Step 3 — Expression: Worst:**
-T(a) = a, Best: T(a) = 1
+- T(a) = a, Best: T(a) = 1
 
 **Step 4 — Simplify: Worst:**
-O(a), Best: O(1)
+- O(a), Best: O(1)
 
 **Step 5 — Final result:**
-
-Worst-case: O(a)
+- Worst-case: O(a)
 
 ---
 
 ## Function-2: is_duplicate_athlete
 ```
-def is_duplicate_athlete(new_athlete_row, existing_data):
-    name_idx = col_index(existing_data[0], "athlete_full_name")  # <= n (worst-case header lookup)
-    dob_idx  = col_index(existing_data[0], "born")               # <= n
-    new_name = new_athlete_row[0].strip().lower()                # 1
-    new_dob  = new_athlete_row[1].strip()                        # 1
-    for row in existing_data[1:]:                                # (n-1) iterations
-        if row[name_idx].strip().lower() == new_name and row[dob_idx].strip() == new_dob:  
-            # ~4 constant ops per iteration (strip/compare)   # 4*(n-1)
-            return True                                         # 1 (on hit)
-    return False                                                 # 1
+def is_duplicate_athlete(new_athlete_row, existing_athlete_identifiers):
+    new_name = new_athlete_row[0].strip().lower()  # O(1)
+    new_dob = new_athlete_row[1].strip()           # O(1)
+    return (new_name, new_dob) in existing_athlete_identifiers  # O(1)                                             # 1
 ```
 **Step 1 — Variables & functions:**
-
-a = rows in existing_data (olympic_athlete_bio),
-p = columns.
-Checks if athlete already exists.
+- new_athlete_row: list containing 2 strings (name, dob).
+- existing_athlete_identifiers: a pre-built set of tuples (name.lower(), dob) representing existing athletes.
+- Function checks if a new athlete already exists.
 
 **Step 2 — Count operations:**
-
-2 × col_index(): O(p)
-Loop over a-1 rows: O(a)
+- strip() and lower() on small strings: O(1)
+- Set membership lookup: O(1) 
 
 **Step 3 — Expression:**
-T(a, p) = 2p + a
+- T(1) = 1 (strip) + 1 (lower) + 1 (set lookup) ≈ O(1)
 
 **Step 4 — Simplify:**
-O(a + p)
+- O(1)
 
 **Step 5 — Final result:**
-
-Worst-case: O(a + p)
+- Worst-case complexity: O(1)
 
 ---
 
@@ -253,25 +241,20 @@ def get_max_id(data, id_col):
     return max_id                       # 1
 ```
 **Step 1 — Variables & functions:**
-
-a = rows in data (olympic_athlete_bio).
-Finds largest numeric ID.
+- a = rows in data (olympic_athlete_bio).
+- Finds largest numeric ID.
 
 **Step 2 — Count operations:**
-
-Loop through a rows: O(a)
+- Loop through a rows: O(a)
 
 **Step 3 — Expression:**
-
-T(a) = a
+- T(a) = a
 
 **Step 4 — Simplify:**
-
-O(a)
+- O(a)
 
 **Step 5 — Final result:**
-
-Worst-case: O(a)
+- Worst-case: O(a)
 
 ---
 
@@ -286,26 +269,22 @@ def calculate_next_edition_id(athlete_event_file):
     return str(max(edition_ids) + 1)                     # max over up to (n-1) items => (n-1) ops + 1
 ```
 **Step 1 — Variables & functions:**
-
-n = rows in olympic_athlete_events_results,
-p = columns.
-Finds max edition_id and returns next one.
+- n = rows in olympic_athlete_events_results,
+- p = columns.
+- Finds max edition_id and returns next one.
 
 **Step 2 — Count operations:**
-
-col_index(): O(p)
-Loop over n-1 rows: O(n)
-max() over set: O(n)
+- col_index(): O(p)
+- Loop over n-1 rows: O(n)
+- max() over set: O(n)
 
 **Step 3 — Expression:**
-T(n, p) = p + 2n
-
+- T(n, p) = p + 2n
 **Step 4 — Simplify:**
-O(n + p)
+- O(n + p)
 
 **Step 5 — Final result:**
-
-Worst-case: O(n + p)
+- Worst-case: O(n + p)
 
 ---
 
@@ -393,25 +372,25 @@ Worst-case: O(n + p)
         athlete_bio_file.append(new_row)
     
 **Step 1 — Establish variables and functions:**
-a = number of rows in athlete_bio_file (olympic_athlete_bio, including header)
-p = number of rows in paris_athletes (including header)
-k = number of columns in these tables (small constant, treat as O(1))
-col_index(header, col_name) → worst case O(1)
-is_duplicate_athlete([name, dob], athlete_bio_file) → worst case O(a)
+- a = number of rows in athlete_bio_file (olympic_athlete_bio, including header)
+- p = number of rows in paris_athletes (including header)
+- k = number of columns in these tables (small constant, treat as O(1))
+- col_index(header, col_name) → worst case O(1)
+- is_duplicate_athlete([name, dob], athlete_bio_file) → worst case O(a)
 
 **Step 2 — Count operations:**
-Part 1 — Filling missing height & weight: loops through a − 1 rows → O(a)
-Part 2 — Setting up indexes: col_index calls → O(1) total
-Part 3 — Integrating Paris athletes: loops through p − 1 rows, each calls is_duplicate_athlete → O(a) per iteration → O(p × a) total
+- Part 1 — Filling missing height & weight: loops through a − 1 rows → O(a)
+- Part 2 — Setting up indexes: col_index calls → O(1) total
+- Part 3 — Integrating Paris athletes: loops through p − 1 rows, each calls is_duplicate_athlete → O(a) per iteration → O(p × a) total
 
 **Step 3 — Mathematical expression**
-T(p, a) = a + (p × a)
+- T(p, a) = a + (p × a)
 
 **Step 4 — Simplify:**
-T(p, a) = O(p × a) (since p × a dominates for large p and a)
+- T(p, a) = O(p × a) (since p × a dominates for large p and a)
 
 **Step 5 — Final result:**
-Worst-case time complexity: O(p × a)
+- Worst-case time complexity: O(p × a)
 
 ---
 
