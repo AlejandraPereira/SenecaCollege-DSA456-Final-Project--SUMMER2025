@@ -1,5 +1,6 @@
 # Team members:
 
-
-* team member name 1
-* team member name 2
+* Jaspinder Singh Gill
+* Alejandra Vanessa Pereira Leon
+* Manpreet Singh
+* Anurag Balu
