@@ -1,4 +1,176 @@
 # Milestone 2 Analysis
+
+## Describe the assumptions and decisions you made
+
+To reconcile the Paris 2024 Olympic data with the existing datasets, we made key assumptions and decisions to ensure consistency and accuracy:
+
+Matching Athletes: We matched athletes from the Paris data using athlete_id. If a Paris athlete did not exist in the original bio file, we treated them as a new athlete and added them accordingly, avoiding duplicates.
+
+Name Formatting: Names in the Paris dataset were originally in all uppercase. We standardized them to title case to match the formatting of existing records.
+
+Birth Dates and Age Calculation: Birth dates follow the format dd-Mon-yyyy. In order to calculate the age of athletes during the Paris Games, we needed the edition’s start date. Since the Paris edition data did not originally include this information, we manually inserted the correct start date for the 2024 Paris Olympics. If an athlete's birth date was missing or invalid, we left the age field as an empty string ("").
+
+Competition Dates: Competition date ranges follow the format dd-Mon-yyyy to dd-Mon-yyyy.
+
+Result ID: The Paris dataset did not include result_id values (which represent medals or placements). As a result, we left the result_id field as an empty string ("") for all Paris athlete records.
+
+Incomplete Athlete Profiles: If an athlete’s height or weight was missing, we imputed it using the average for their gender based on available data.
+
+New Edition and Country Entries: We incremented the latest edition_id to represent the Paris 2024 Games and ensured any new countries present in the Paris dataset were also added to the countries.csv file if not already there.
+
+## Data structures used
+
+Our application uses built-in Python data structures for all data manipulation. These include:
+
+- **List of Lists (list):**  
+
+Used for storing CSV file data.
+Each dataset (e.g., athlete_bio_file, paris_athletes) is represented as a list of rows, and each row is a list of string values.
+
+- **Dictionaries (`dict`)**
+
+To optimize searches and quickly access specific data, dictionaries are created that map unique keys to important values. Some examples are:
+
+    - `athlete_birth_dict`: `athlete_id` key, `datetime` value.
+    - `games_start_dates_dict`: `edition_id` key, tuple value with the event's start and end date.
+    - `noc_to_country`: NOC code key, country name value.
+    - `medal_tally`: Nested dictionary to aggregate medals per edition and NOC.
+
+- **Additional Python methods used**
+
+The application also uses built-in Python functions and methods to simplify data handling and improve readability. Some examples include range() and enumerate() for loops, string methods like strip(), title(), and lower() for text processing, set() for managing unique values, try-except blocks for error handling, and datetime.strptime() for date parsing. These are just a few of the many Python features applied to keep the code clean and efficient.
+
+## General Data Manipulation
+
+- **Read input CSV files** into list-of-lists using `read_csv_file`.  
+- **Clean & Integrate data:**  
+  - Format names and birth dates. 
+  - Format the competition date range 
+  - Fill missing height/weight based on gender.  
+  - Integrate new athletes while checking for duplicates.  
+  - Add new games and countries if not already present.
+  - Assign athlete positions based on medals won, or mark as "DNS" (Did Not Start) or "DNF" (Did Not Finish).
+  - Validate and handle invalid or missing dates (e.g., accounting for leap years like Feb 29).
+  - Normalize athlete name casing (e.g., from ALL CAPS to Proper Case) in paris/athlete.csv olympic_athlete_event_result.csv and olympic_athlete_bio.csv and 
+
+- **Transform:**  
+  - Calculate ages based on event start dates.  
+  - Normalize medal/position values.  
+- **Aggregate:**  
+  - Tally medal counts per edition and country.  
+  - Track number of unique athletes.  
+- **Write output data** using `write_csv_file`.
+
+
+## Why did you choose the data structure you chose? How did you use it?
+
+**Lists** were chosen to represent tabular CSV data because they preserve the order of records naturally, which is important for CSV files where the row order matters (e.g., header first, then data rows). Lists also provide straightforward iteration and slicing capabilities that simplify reading, processing, and writing CSV data line by line.
+
+Slicing is used strategically in the code to simplify operations on structured data, like lists representing CSV files. For example, it is especially helpful when we need to skip headers ([1:]) or quickly access subsets of rows or columns. These cases benefit from slicing because it reduces repetitive code and improves readability.
+
+However, not every function uses slicing — and that’s by design. In scenarios where precise control over each element is needed, or where clarity is more important than brevity, traditional loops are preferred. This blend ensures that the code remains efficient without sacrificing maintainability or making the logic harder to follow.
+
+By combining both slicing and explicit iteration as needed, the code achieves a practical balance between expressiveness and clarity.
+
+**Dictionaries** were used to enhance performance and enable efficient lookups. For example, searching for an athlete by athlete_id or looking up game start dates by edition_id would be costly if done via linear scans over lists, especially as the datasets grow large. By mapping keys to values, dictionaries provide average O(1) time complexity for these lookups, greatly improving overall application speed.
+
+The combination of lists and dictionaries balances simplicity with efficiency. Lists provide a straightforward and direct way to represent raw CSV data, while dictionaries add fast indexing and retrieval capabilities without the complexity or overhead of more advanced data structures or external databases. Dictionaries also improve code readability and maintainability by explicitly linking keys (such as athlete IDs or edition IDs) to their related data, which helps avoid errors that can occur with manual index handling in nested lists. This approach offers flexibility as well — since CSV files can change structure (for example, with columns added or reordered), helper functions like col_index dynamically locate the needed columns, allowing the program to adapt while keeping data storage simple. Finally, this design conserves memory by storing data once in lists and using dictionaries only for lightweight mappings or references, which is especially helpful when processing large Olympic datasets.
+
+## Usage example
+
+In the create_athlete_birth_dict function, a dictionary is created where the key is the athlete_id and the value is the athlete’s date of birth. This structure allows very fast lookups — typically O(1) time complexity — meaning it can retrieve the birth date almost instantly without searching through the entire list. This makes it easy to quickly calculate an athlete's age for any event without traversing the entire original list.
+
+---
+
+## runtime needed to clean all data
+
+**Function clean_pos**
+- Input size: pos_value (string)
+- Runtime: O(1)
+
+**Function clean_all_positions**
+- Input size: n = rows in athlete_event_file
+- Runtime: O(n)
+
+**Function parse_date**
+- Input size: l = length of date string
+- Runtime: O(l)
+
+**Function format_athlete_born**
+- Input size: a = rows in athlete_bio_list
+- Runtime: O(a)
+
+**Function format_p_athlete_born**
+- Input size: p = rows in paris_athletes_list
+- Runtime: O(p)
+
+**Function format_games_dates**
+- Input size: g = rows in games_list
+- Runtime: O(g)
+
+**Total runtime to clean all data**
+- The overall time complexity is: O(n) + O(a) + O(p) + O(g) + O(l) + O(1) = **O(n + a + p + g)**
+
+---
+
+## runtime needed to add paris data into the records
+**Function col_index**  
+- Input size: *a* = number of columns in header  
+- Runtime: O(a) worst-case (searching column name), O(1) best-case
+
+**Function is_duplicate_athlete**  
+- Input size: *a* = number of rows in existing_data (olympic_athlete_bio), *p* = number of columns  
+- Runtime: O(a + p) (searching header columns + linear scan for duplicates)
+
+**Function get_max_id**  
+- Input size: *a* = number of rows in data (olympic_athlete_bio)  
+- Runtime: O(a) (linear scan to find max id)
+
+**Function calculate_next_edition_id**  
+- Input size: *n* = number of rows in olympic_athlete_events_results, *p* = number of columns  
+- Runtime: O(n + p) (lookup index + linear scan + max)
+
+**Function integrate_paris_athletes**  
+- Input size: *a* = number of rows in athlete_bio_file, *p* = number of rows in paris_athletes  
+- Runtime: O(p × a) (loop over Paris athletes × duplicate checks in existing bio)
+
+**Function mergeGamesData**  
+- Input size: *m* = rows in games_file, *n* = rows in paris_data  
+- Runtime: O(m + n)
+
+**Function integrate_paris_countries**  
+- Input size: *m* = rows in original_countries, *n* = rows in paris_nocs  
+- Runtime: O((m + n) log(m + n))
+
+**Function process_medals_and_update_file**  
+- Input size: *m* = rows in athlete_event_file, *p* = rows in paris_medallists  
+- Runtime: O(m + p)
+
+**Total Runtime for Inserting Paris Data**  
+- The overall time complexity is:  O(p × a) + O((m + n) log(m + n)) + O(m + n + p + a)  
+- Since *p × a* is a product and typically grows faster than sums or log terms, the overall complexity is:  
+  **O(p × a)**
+
+---
+
+## runtime needed to generate the medal results for all games
+**Function create_noc_dict**
+- Input size: c = rows in countries_data
+- Runtime: O(c)
+
+**Function process_medal_tally**
+- Input size: c = rows in athletes_data
+- Runtime: O(c)
+
+**Function generate_summary_data**
+- Input size: I editions, K total countries across all editions
+- Runtime: O(K)
+
+**Total runtime to generate medal results for all games**
+- The overall time complexity is:  O(c)+ O(c)+ O(K)= **O(c+K)**
+
+---
+
 ## Function-1: col_index
 ```
 def col_index(header, col_name):
@@ -513,3 +685,300 @@ def process_medals_and_update_file(athlete_event_file, paris_medallists, teams_d
 
 **Step 5 — Final Result**
 - Time Complexity: O(m + p)
+
+---
+
+## Function-12 create_athlete_birth_dict
+```def create_athlete_birth_dict(new_athlete_bio_data):
+    birth_dict = {}                                             # 1
+    is_header = True                                            # 1
+    for row in new_athlete_bio_data:                            # a 
+        if is_header:                                           # 6 ops in the if statement
+            id_index = row.index("athlete_id")                  # 2 ops (assignment + .index())
+            born_index = row.index("born")                      # 2 ops (assignment + .index())
+            is_header = False                                   # 1 
+            continue                                            # 1
+        
+        athlete_id = row[id_index]                              # 1 * (a-1)
+        born_str = row[born_index]                              # 1 * (a-1)
+        
+        try:
+            birth_date = datetime.strptime(born_str, "%d-%b-%Y")  # 2 * (a-1)
+        except Exception:
+            birth_date = None                                   # 1 * (a-1)
+        
+        birth_dict[athlete_id] = birth_date                     # 1 * (a-1)
+    
+    return birth_dict                                          # 1
+```
+**Step 1 - Variables & fuctions**
+- Let a = number of records (rows) in new_athlete_bio_data
+
+**tep 2 — Count operations**
+- 2  assignments → O(1)
+- 6 operations for the if statement block
+- 1 operation for athlete_id assignment
+- 1 operation for born_str assignment
+- 2 operations for datetime.strptime inside try block
+- 1 except assignment if exception raised (worst case)
+- 1 dictionary assignment
+- 1 return statement → O(1)
+
+**Step 3 — Expression**
+- T(a)=2+6+2+2+1+1+(a−1)×(1+1+2+1+1)+1=14+6(a−1)+1=6a+9
+
+**Step 4 — Simplify:**
+- T(a)=6a+9
+- O(a)
+
+**Step 5 — Final result**
+- Worst-case runtime complexity is O(a)
+
+---
+
+## Function-13 create_games_start_dates_dict
+
+```
+def create_games_start_dates_dict(games):
+    start_dates_dict = {}                       # 1 op 
+    is_header = True                            # 1 op 
+    
+    for row in games:                           # c iterations 
+        if is_header:                          # 8 ops in the if statement: 
+            edition_id_index = row.index("edition_id")   # 2 ops (assignment + .index())
+            start_date_index = row.index("start_date")   # 2 ops
+            end_date_index = row.index("end_date")       # 2 ops
+            is_header = False                 # 1 op 
+            continue                          # 1 op
+       
+        edition_id = row[edition_id_index]    # 1 op
+        
+        try:
+            start_date = datetime.strptime(row[start_date_index], "%d-%b-%Y")  # 2 op
+            end_date = datetime.strptime(row[end_date_index], "%d-%b-%Y")      # 2 op
+        except Exception:
+            start_date = None                # 1 op
+            end_date = None                  # 1 op
+    
+        start_dates_dict[edition_id] = (start_date, end_date)  # 1 op
+        
+    return start_dates_dict                    # 1 op
+```
+**Step 1 — Variables & functions**
+- c = total number of rows in the games list (including header).
+
+**Step 2 — Count operations**
+- 2  assignments → O(1)
+- c 
+- 8 ops if statement
+- 1 assignment for edition_id
+- 4 ops( 2 assignment and two calls to  to datetime.strptime() )
+- 2 assigments dates as None
+- 1 dictionary assignment
+- 1 return statement → O(1)
+
+**Step 3 — Expression**
+- T(c)=2+8+(c−1)×(1+4+2+1)+1=2+8+8(c−1)+1=8c+2
+
+**Step 4 — Simplify**
+- T(c)=8c+2
+
+**Step 5 — Final result**
+
+- Worst-case runtime complexity is O(c)
+
+---
+
+## Function-14 calculate_age
+
+```
+def calculate_age(birth_date, start_date, end_date):
+      if not birth_date or not start_date or not end_date:  # 3 checks
+        return ""                                        # 1 operation (return)
+
+    age = start_date.year - birth_date.year        # 1 
+
+    try:
+        birthday_this_year = birth_date.replace(year=start_date.year)  # 1 method call + 1 assignment
+    except ValueError:
+        # If birth_date is Feb 29 and start_date.year is not leap, use Feb 28
+        birthday_this_year = birth_date.replace(year=start_date.year, day=28)  # 1 method call + 1 assignment
+
+    if start_date < birthday_this_year:                   # 1 comparison
+        age -= 1                                          # 1 
+
+    return str(age)                                       # 1 conversion + 1 return
+```
+
+**Step 1 — Variables & functions**
+- Inputs: 3 single datetime objects or None.
+
+**Step 2 — Count operations**
+- Initial conditional checks (if not birth_date or not start_date or not end_date): 3 operations
+- Early return if any are None: 1 operation
+- Subtract years: 1 operation
+- birth_date.replace(year=start_date.year): 1 operation
+- Except block (if exception):
+- birth_date.replace(year=start_date.year, day=28): 1 operation
+- Compare dates (start_date < birthday_this_year): 1 operation
+- Decrement age: 1 operation
+- 1 conversion + 1 return
+
+**Step 3 — Expression***
+- Total operations = 3 + 1 + 1 + 2 + 2 + 1 + 1 + 2 = 13 operations (all constant)
+
+**Step 4 — Simplify**
+- O(1)
+
+**Step 5 — Final result**
+- Worst-case: O(1)
+
+---
+
+## Function-15 create_noc_dict
+```
+def create_noc_dict(countries_data):
+    noc_to_country = {}                              # 1 
+    for i, row in enumerate(countries_data):        # c 
+        if i == 0:                                  # 1 
+            continue                                # 1 
+        noc = row[0]                                # 1 
+        country_name = row[1]                        # 1 
+        noc_to_country[noc] = country_name          # 1 
+    return noc_to_country                            # 1 
+````
+**Step 1 — Variables & functions**
+- c = total number of rows in countries_data (including header).
+
+**Step 2 — Count operations**
+
+- 1 initialize dictionary
+- c ops
+- 5 op in the if statement
+- 1 return statement → O(1)
+
+**Step 3 — Expression**
+- T(c)= 1 + c*5 + 1
+
+**Step 4 — Simplify**
+- T(c) = 2+5c
+
+**Step 5 — Final result**
+- Worst-case runtime complexity: O(c)
+
+---
+
+## Function-16 process_medal_tally
+```
+    medal_tally = {}                                  # 1 op
+    for i, row in enumerate(athletes_data):          # c iterations 
+        if i == 0:                                   # 1 
+            continue                                 # 1 
+
+        edition_name = row[0]                         # 1 
+        edition_id = row[1]                           # 1 
+        country_noc = row[2]                          # 1 
+        athlete_id = row[7]                           # 1 
+        medal = row[9]                                # 1 
+
+        # Check if edition exists and possibly add it
+        if edition_name not in medal_tally:           # 1 
+            medal_tally[edition_name] = {}            # 1 
+
+        # Check if country exists and possibly add it
+        if country_noc not in medal_tally[edition_name]:  # 1 
+            medal_tally[edition_name][country_noc] = {    # 1 
+                'edition_id': edition_id,                   
+                'athletes': set(),                          # 1 op
+                'gold': 0,                                  
+                'silver': 0,                                
+                'bronze': 0                                 
+            }
+
+        if medal == 'Gold':                             # 1
+            medal_tally[edition_name][country_noc]['gold'] += 1  # 2
+        elif medal == 'Silver':                         # 1 
+            medal_tally[edition_name][country_noc]['silver'] += 1  # 2
+        elif medal == 'Bronze':                         # 1 
+            medal_tally[edition_name][country_noc]['bronze'] += 1  # 1 
+
+        # Add athlete to set (average O(1) per set insertion)
+        medal_tally[edition_name][country_noc]['athletes'].add(athlete_id)  # 1 
+
+    return medal_tally                                 # 1 
+```
+**Step 1 — Variables & functions**
+- Let c = number of rows in athletes_data (including header)
+- Number of editions and countries per edition ≤ c (worst case)
+- Set insertions are average O(1)
+
+**Step 2 — Count operations**
+
+- 1 initialization
+- c ops 
+- 19 attribute accesses/assignments
+- 1 return statement → O(1)
+
+**Step 3 — Expression**
+- T(c)=1+c×18+1
+
+**Step 4 — Simplify**
+- T(c) = 2+18c
+
+**Step 5 — Final result**
+- Worst-case runtime complexity: O(c)
+
+---
+
+## Function-17 process_medal_tally
+```
+    summary_data = []      # 1
+    header = [
+        "edition", "edition_id", "Country", "NOC",
+        "number_of_athletes", "gold_medal_count", "silver_medal_count",
+        "bronze_medal_count", "total_medals"
+    ]
+    summary_data.append(header)  # 1 operation
+
+    # Iterate through medal tally to build the summary rows
+    for edition_name, countries in medal_tally.items():        # I iterations (number of editions)
+        for country_noc, data in countries.items():            # K iterations per edition
+            edition_id = data['edition_id']                    # 1
+            country_name = noc_to_country.get(country_noc, "Unknown")  # 1 (dict lookup)
+            num_athletes = len(data['athletes'])               # 1
+            gold = data['gold']                                 # 1
+            silver = data['silver']                             # 1
+            bronze = data['bronze']                             # 1
+            total = gold + silver + bronze                      # 3 
+            summary_data.append([                               # 1 
+                edition_name, edition_id, country_name, country_noc,
+                num_athletes, gold, silver, bronze, total
+            ])
+    return summary_data # 1 
+```
+**Step 1 — Variables & functions**
+- Let I be number of editions (keys in medal_tally)
+- Let K be  Number of countries in the 𝑖 edition (inner loop iterations)
+
+**Step 2 — Count operations**
+- 1 operation append header
+- For each of the I editions:  I ops
+    - For each of the 𝐾 countries:    K ops 
+       - 1 operation for edition_id retrieval
+       - 1 operation for dict lookup noc_to_country.get()
+       - 2 operation for length and assignment
+       - 1 operation for gold, 
+       - 1 operation for silver
+       - 1 operation for bronze  
+       - 3 operations to sum medals
+       - 1 operation to append the new row
+- 1 return statement → O(1)
+
+**Step 3 — Expression:**
+- T = 2 + 11 × (number of countries in edition 1+in edition 2+⋯+in edition I)
+
+**Step 4 — Simplify**
+- T = 2 + 11 × K
+
+**Step 5 — Final result**
+- T= O(K)
