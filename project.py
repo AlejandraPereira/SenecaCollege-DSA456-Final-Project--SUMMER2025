@@ -12,7 +12,8 @@
 
 # supports the use of csv library
 import csv
-
+import time 
+from datetime import datetime
 
 
 # This function reads a csv file and return a list of lists
@@ -35,8 +36,6 @@ def write_csv_file(file_name, data_set):
         for row in data_set:
             csv_writer.writerow(row)
 
-import time
-from datetime import datetime
 
 #Create the new_olympic_athlete_bio.csv
 
@@ -77,18 +76,21 @@ def integrate_paris_athletes(paris_athletes, athlete_bio_file):
     Returns:
     None
     """
-
     # First, fill in missing height and weight for existing athletes
     height_idx = col_index(athlete_bio_file[0], "height")
     weight_idx = col_index(athlete_bio_file[0], "weight")
     sex_idx = col_index(athlete_bio_file[0], "sex")
+    name_idx_existing = col_index(athlete_bio_file[0], "name")  
     
-    if height_idx != -1 and weight_idx != -1 and sex_idx != -1:
+    if height_idx != -1 and weight_idx != -1 and sex_idx != -1 and name_idx_existing != -1:
         for i in range(1, len(athlete_bio_file)):
+            # Convert existing name to title format (First letter capitalized)
+            athlete_bio_file[i][name_idx_existing] = athlete_bio_file[i][name_idx_existing].title()
+
             height = athlete_bio_file[i][height_idx].strip()
             weight = athlete_bio_file[i][weight_idx].strip()
             sex = athlete_bio_file[i][sex_idx].strip()
-            
+
             # Add height if missing
             if not height:
                 if sex.lower() == 'male':
@@ -97,7 +99,7 @@ def integrate_paris_athletes(paris_athletes, athlete_bio_file):
                     athlete_bio_file[i][height_idx] = "165"
                 else:
                     athlete_bio_file[i][height_idx] = "170"
-            
+
             # Add weight if missing
             if not weight:
                 if sex.lower() == 'male':
@@ -109,6 +111,7 @@ def integrate_paris_athletes(paris_athletes, athlete_bio_file):
 
     # Now integrate Paris athletes
     # Use correct column names from Paris CSV
+    code_idx = col_index(paris_athletes[0], "code")
     name_idx = col_index(paris_athletes[0], "name")
     dob_idx = col_index(paris_athletes[0], "birth_date")
     paris_sex_idx = col_index(paris_athletes[0], "gender")
@@ -120,19 +123,26 @@ def integrate_paris_athletes(paris_athletes, athlete_bio_file):
         print(f"Warning: Could not find required columns in Paris data")
         return
 
-    athlete_id_idx = col_index(athlete_bio_file[0], "athlete_id")
-    max_id = get_max_id(athlete_bio_file, athlete_id_idx)
+
+    # Create a set of existing athlete identifiers for fast lookup
+    existing_athlete_identifiers = set()
+    name_idx_existing = col_index(athlete_bio_file[0], "name")
+    dob_idx_existing = col_index(athlete_bio_file[0], "born")
+    for row in athlete_bio_file[1:]:
+        existing_athlete_identifiers.add((row[name_idx_existing].strip().lower(), row[dob_idx_existing].strip()))
 
     added_count = 0
     for i in range(1, len(paris_athletes)):
-        name = paris_athletes[i][name_idx].strip()
+        # Convert existing name to title format (First letter capitalized)
+        code = paris_athletes[i][code_idx].strip()
+        name = paris_athletes[i][name_idx].strip().title()
         dob = paris_athletes[i][dob_idx].strip()
         sex = paris_athletes[i][paris_sex_idx].strip()
         country = paris_athletes[i][country_idx].strip() if country_idx != -1 else ""
         country_noc = paris_athletes[i][country_code_idx].strip() if country_code_idx != -1 else ""
 
-        # Skip if already in bio file
-        if is_duplicate_athlete([name, dob], athlete_bio_file):
+        # Skip if already in bio file using the optimized is_duplicate_athlete
+        if is_duplicate_athlete([name, dob], existing_athlete_identifiers):
             continue
 
         # Add reasonable placeholder values for height and weight based on gender
@@ -146,28 +156,10 @@ def integrate_paris_athletes(paris_athletes, athlete_bio_file):
             height = "170"  # Default height
             weight = "70"   # Default weight
 
-        max_id += 1
-        added_count += 1
-        # Format: athlete_id, name, sex, born, height, weight, country, country_noc
-        new_row = [str(max_id), name, sex, dob, height, weight, country, country_noc]
+        new_row = [code, name, sex, dob, height, weight, country, country_noc]
         athlete_bio_file.append(new_row)
-    
-    print(f"Added {added_count} new Paris athletes to bio file")
 
 # Create the new_olympic_athlete_events_result.csv 
-
-def create_events_dict(events):
-    """
-    Creates a dictionary mapping event IDs to sport details.
-
-    Args:
-        events (list): List containing event data rows.
-
-    Returns:
-        dict: A dictionary where keys are event IDs and values are dictionaries with sport and sport_code.
-    """
-    pass
-
 
 def create_teams_dict(teams):
     """
@@ -213,7 +205,6 @@ def calculate_next_edition_id(athlete_event_file):
     
     return str(max(edition_ids) + 1)
 
-
 def create_athlete_birth_dict(athlete_bio_list):
     """
     Generates a dictionary mapping athlete IDs to their birth dates.
@@ -251,7 +242,6 @@ def create_athlete_birth_dict(athlete_bio_list):
         birth_dict[athlete_id] = birth_date
 
     return birth_dict
-
 
 def create_games_start_dates_dict(games_list):
     """
@@ -293,7 +283,6 @@ def create_games_start_dates_dict(games_list):
         start_dates_dict[edition_id] = (start_date, end_date)
 
     return start_dates_dict
-
 
 def calculate_age(birth_date, start_date, end_date):
     """
@@ -506,7 +495,6 @@ def col_index(header, col_name):
     except ValueError:
         return -1
 
-
 def is_duplicate_athlete(new_athlete_row, existing_data):
     """
     Checks whether a new athlete already exists in the existing dataset.
@@ -529,7 +517,6 @@ def is_duplicate_athlete(new_athlete_row, existing_data):
             return True
     return False
 
-
 def get_max_id(data, id_col):
     """
     Finds the maximum numeric ID in the given dataset based on column index.
@@ -551,7 +538,6 @@ def get_max_id(data, id_col):
         except ValueError:
             continue
     return max_id 
-
 
 def mergeGamesData(games_file, paris_data):
     """
@@ -578,7 +564,6 @@ def mergeGamesData(games_file, paris_data):
         existing_ids.add(row[edition_id_idx])
 
     return merged_games
-
 
 def integrate_paris_countries(original_countries, paris_nocs):
     """
