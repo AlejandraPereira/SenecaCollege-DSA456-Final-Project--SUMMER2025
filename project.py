@@ -498,27 +498,22 @@ def col_index(header, col_name):
     except ValueError:
         return -1
 
-def is_duplicate_athlete(new_athlete_row, existing_data):
+def is_duplicate_athlete(new_athlete_row, existing_athlete_identifiers):
     """
-    Checks whether a new athlete already exists in the existing dataset.
+    Checks whether a new athlete already exists in the existing dataset using a pre-built set.
 
     Args:
-        new_athlete_row (list): The new athlete's data row.
-        existing_data (list): The current athlete bio dataset.
+        new_athlete_row (list): The new athlete's data row (name, dob).
+        existing_athlete_identifiers (set): A set of (name.lower(), dob) tuples for existing athletes.
 
     Returns:
         bool: True if the athlete already exists, False otherwise.
     """
-
-    name_idx = col_index(existing_data[1], "name")
-    dob_idx = col_index(existing_data[0], "born")
     new_name = new_athlete_row[0].strip().lower()
     new_dob = new_athlete_row[1].strip()
+    return (new_name, new_dob) in existing_athlete_identifiers
 
-    for row in existing_data[1:]:
-        if row[name_idx].strip().lower() == new_name and row[dob_idx].strip() == new_dob:
-            return True
-    return False
+# Create the new_olympic_athlete_events_result.csv 
 
 def get_max_id(data, id_col):
     """
