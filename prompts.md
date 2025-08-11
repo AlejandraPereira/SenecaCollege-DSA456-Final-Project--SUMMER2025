@@ -29,6 +29,23 @@ This file logs the tool/prompts you used and the results.  A small note on wheth
 |chatgpt|How can I handle February 29 birthdays properly when calculating age?| A practical and efficient way is to try replacing the birth year with the event year directly; if it raises a ValueError (non-leap year), catch it with try-except and adjust the day to February 28 to calculate age correctly.| Used try-except to handle Feb 29 birthdays in non-leap years, adjusting day to Feb 28 when needed.|
 
 
+## Team-Member2-Anurag Balu
+
+
+|AI tool name|prompt | result | alterations |
+|---|---|---|---|
+| ChatGPT        | How do I avoid adding duplicate athlete-event pairs while merging medal data?                                | Suggested using a set of (athlete_id, event) tuples to track and skip duplicates.   | Used this in process_medals_and_update_file with a `unique_entries` set.  |
+| GitHub Copilot | Started writing a function to clean invalid position values like ‘NA’ or ‘DidNotFinish’                      | Auto-completed logic to check if value is digit or in ['DNF', 'DNS']                | Kept logic in clean_pos, and reused it inside clean_all_positions.   |
+| ChatGPT        | What’s the best way to calculate athlete age using birthdate and event start date?                           | Suggested using `datetime.replace()` and conditional logic for birthday comparison. | Used this inside calculate_age() in process_medals_and_update_file. |
+| ChatGPT        | How to safely add a new column to an existing list of lists without breaking row lengths?                    | Recommended checking header first and appending default value for all rows          | Implemented in process_medals_and_update_file to add the `"age"` column.  |
+| GitHub Copilot | Started typing a function to map team events and it auto-filled dictionary keys like 'isTeamSport' and 'team'| Helped build structure for event-team mapping dictionary                            | Used in create_teams_dict, adjusted keys and logic as needed.             |
+| ChatGPT        | I need to merge a list of new games into an existing list but skip duplicate edition_ids                     | Suggested building a set of existing IDs and checking before appending              | Directly used in mergeGamesData.                                          |
+| ChatGPT        | What if country codes from Paris data already exist in the original list? How to avoid adding twice?          | Recommended using a set to track existing NOCs and filter new ones                  | Used in integrate_paris_countries to prevent adding duplicate NOCs.       |
+| Google Search  | How to loop through 2D list and apply a cleaning function to a specific column?                              | Found that indexing by header and updating rows works best                          | Used in clean_all_positions to apply `clean_pos()` to each "pos" column.  |
+| ChatGPT        | What’s the simplest way to map medals like “Gold Medal”, “Silver Medal” to clean strings?                    | Advised using if-else to match strings and normalize medal types                    | Added this logic to process_medals_and_update_file.                       |
+| ChatGPT        | Should I sort merged country list by country name after integration?                                         | Yes, sorting by second column helps maintain order                                  | Used `sorted(..., key=lambda x: x[1])` in integrate_paris_countries.      |
+
+
 ## Team-Member3-Manpreet Singh
 
 
