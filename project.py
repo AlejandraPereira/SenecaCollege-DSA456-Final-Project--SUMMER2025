@@ -158,71 +158,6 @@ def calculate_age(birth_date, start_date, end_date):
 
     return str(age)
 
-
-def create_noc_dict(countries_data):
-    """
-    Creates a dictionary mapping NOC codes to country names.
-    Parameters:
-        countries_data (list): A list of lists representing country data
-    Returns:
-        dict: A dictionary with NOC codes as keys (strings) and country names as values (strings).
-    """
-    noc_to_country = {}
-    for i, row in enumerate(countries_data):
-        if i == 0:  # Skip header row
-            continue
-        noc = row[0]
-        country_name = row[1]
-        noc_to_country[noc] = country_name
-    return noc_to_country
-
-def process_medal_tally(athletes_data):
-    """
-    Processes athlete event data to compute medal tallies by edition and country.
-    Parameters:
-        athletes_data (list): List of athlete event rows, including headers.
-    Limitations:
-        Assumes that the data contains the expected columns at the specified indexes.
-        Does not aggregate medals beyond the scope of edition and country.
-        Athlete IDs are used only to count unique athletes per country and edition.
-    Returns:
-        dict: Nested dictionary with medal counts and athlete IDs per edition and NOC.
-    """
-    medal_tally = {}
-    for i, row in enumerate(athletes_data):
-        if i == 0:  # Skip header row
-            continue
-        edition_name = row[0]
-        edition_id = row[1]
-        country_noc = row[2]
-        athlete_id = row[7]
-        medal = row[9]
-
-        # Initialize the edition in the medal tally if not present
-        if edition_name not in medal_tally:
-            medal_tally[edition_name] = {}
-
-        # Initialize the country data for this edition if not present
-        if country_noc not in medal_tally[edition_name]:
-            medal_tally[edition_name][country_noc] = {
-                'edition_id': edition_id,
-                'athletes': set(),
-                'gold': 0,
-                'silver': 0,
-                'bronze': 0
-            }
-        # Count medals
-        if medal == 'Gold':
-            medal_tally[edition_name][country_noc]['gold'] += 1
-        elif medal == 'Silver':
-            medal_tally[edition_name][country_noc]['silver'] += 1
-        elif medal == 'Bronze':
-            medal_tally[edition_name][country_noc]['bronze'] += 1
-
-        # Track unique athlete IDs for each country and edition
-        medal_tally[edition_name][country_noc]['athletes'].add(athlete_id)
-    return medal_tally
-
 def clean_pos(pos_value):
     """
     Validates and cleans a position value.
@@ -440,6 +375,83 @@ def integrate_paris_countries(original_countries, paris_nocs):
     header = updated_countries[0]
     data_rows = sorted(updated_countries[1:], key=lambda x: x[1])
     return [header] + data_rows
+
+def create_noc_dict(olympics_country, paris_nocs):
+    """
+    Combines two lists of country data (each including a header row)
+    and creates a dictionary mapping NOC codes to country names.
+    Parameters:
+        countries_data1 (list of list of str): First country data list including header.
+        countries_data2 (list of list of str): Second country data list including header.
+    Returns:
+        dict: A dictionary where keys are NOC codes (str) and values are country names (str).
+              Entries from countries_data2 will overwrite those from countries_data1 if duplicated.
+    """
+    noc_to_country = {}
+
+    for i, row in enumerate(olympics_country):
+        if i == 0:  # Skip header row
+            continue
+        noc = row[0]
+        country_name = row[1]
+        noc_to_country[noc] = country_name
+
+    for i, row in enumerate(paris_nocs):
+        if i == 0:  # Skip header row
+            continue
+        noc = row[0]
+        country_name = row[1]
+        noc_to_country[noc] = country_name  # Overwrite if duplicate
+
+    return noc_to_country
+
+
+def process_medal_tally(athletes_data):
+    """
+    Processes athlete event data to compute medal tallies by edition and country.
+    Parameters:
+        athletes_data (list): List of athlete event rows, including headers.
+    Limitations:
+        Assumes that the data contains the expected columns at the specified indexes.
+        Does not aggregate medals beyond the scope of edition and country.
+        Athlete IDs are used only to count unique athletes per country and edition.
+    Returns:
+        dict: Nested dictionary with medal counts and athlete IDs per edition and NOC.
+    """
+    medal_tally = {}
+    for i, row in enumerate(athletes_data):
+        if i == 0:  # Skip header row
+            continue
+        edition_name = row[0]
+        edition_id = row[1]
+        country_noc = row[2]
+        athlete_id = row[7]
+        medal = row[9]
+
+        # Initialize the edition in the medal tally if not present
+        if edition_name not in medal_tally:
+            medal_tally[edition_name] = {}
+
+        # Initialize the country data for this edition if not present
+        if country_noc not in medal_tally[edition_name]:
+            medal_tally[edition_name][country_noc] = {
+                'edition_id': edition_id,
+                'athletes': set(),
+                'gold': 0,
+                'silver': 0,
+                'bronze': 0
+            }
+        # Count medals
+        if medal == 'Gold':
+            medal_tally[edition_name][country_noc]['gold'] += 1
+        elif medal == 'Silver':
+            medal_tally[edition_name][country_noc]['silver'] += 1
+        elif medal == 'Bronze':
+            medal_tally[edition_name][country_noc]['bronze'] += 1
+
+        # Track unique athlete IDs for each country and edition
+        medal_tally[edition_name][country_noc]['athletes'].add(athlete_id)
+    return medal_tally
 
 def generate_summary_data(medal_tally, noc_to_country):
     """
