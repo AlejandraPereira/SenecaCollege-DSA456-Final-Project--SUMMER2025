@@ -510,7 +510,7 @@ def is_duplicate_athlete(new_athlete_row, existing_data):
         bool: True if the athlete already exists, False otherwise.
     """
 
-    name_idx = col_index(existing_data[0], "name")
+    name_idx = col_index(existing_data[1], "name")
     dob_idx = col_index(existing_data[0], "born")
     new_name = new_athlete_row[0].strip().lower()
     new_dob = new_athlete_row[1].strip()
