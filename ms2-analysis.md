@@ -837,33 +837,49 @@ def calculate_age(birth_date, start_date, end_date):
 
 ## Function-15 create_noc_dict
 ```
-def create_noc_dict(countries_data):
+def create_noc_dict(olympics_country, paris_nocs):
     noc_to_country = {}                              # 1 
-    for i, row in enumerate(countries_data):        # c 
+    for i, row in enumerate(olympics_country):        # c1 
         if i == 0:                                  # 1 
             continue                                # 1 
         noc = row[0]                                # 1 
         country_name = row[1]                        # 1 
         noc_to_country[noc] = country_name          # 1 
+
+    for i, row in enumerate(paris_nocs):    #c
+        if i == 0:  # Skip header row      #1
+            continue                      #1
+        noc = row[0]        #1
+        country_name = row[1]       #1
+        noc_to_country[noc] = country_name  # 1
+    
     return noc_to_country                            # 1 
 ````
 **Step 1 — Variables & functions**
-- c = total number of rows in countries_data (including header).
+- c = total number of rows in olympics_country and paris_nocs
+- c1= number of rows in olympics_country (including header)
+- c2 = number of rows in paris_nocs (including header)
 
 **Step 2 — Count operations**
 
 - 1 initialize dictionary
-- c ops
+- c1 ops
+- 5 op in the if statement
+
+- 1 initialize dictionary
+- c2 ops
 - 5 op in the if statement
 - 1 return statement → O(1)
 
 **Step 3 — Expression**
-- T(c)= 1 + c*5 + 1
+- T(c)= 1+ 5c1 + 1 + 5c2 + 1
 
 **Step 4 — Simplify**
-- T(c) = 2+5c
+- T(c) = 3+ 5(c1+c2)
 
 **Step 5 — Final result**
+- T(c) = 2+ 5c  where c = c1+c2
+
 - Worst-case runtime complexity: O(c)
 
 ---
