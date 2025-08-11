@@ -63,6 +63,9 @@ def format_p_athlete_born(paris_athletes_list):
     """
     pass
 
+def format_games_dates(games_list):
+    pass
+
 def integrate_paris_athletes(paris_athletes, athlete_bio_file):
     """
     Integrates new athletes from the Paris athletes list into the athlete_bio_file list.
