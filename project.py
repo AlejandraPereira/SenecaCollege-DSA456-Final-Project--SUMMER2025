@@ -12,7 +12,8 @@
 
 # supports the use of csv library
 import csv
-
+import time
+from datetime import datetime
 
 
 # This function reads a csv file and return a list of lists
@@ -547,9 +548,10 @@ def main():
  
     #new_medal_tally.csv
     new_athlete_event_file = read_csv_file("new_olympic_athlete_event_results.csv")
-    countries_file = read_csv_file("new_olympics_country.csv")
- 
-    noc_to_country = create_noc_dict(countries_file)
+    olympics_countries = read_csv_file("olympics_country.csv")
+    paris_nocs = read_csv_file("paris/nocs.csv")
+
+    noc_to_country = create_noc_dict(olympics_countries, paris_nocs)
     medal_tally = process_medal_tally(new_athlete_event_file)
     summary_data = generate_summary_data(medal_tally, noc_to_country)
  
